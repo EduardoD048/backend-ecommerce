@@ -1,0 +1,36 @@
+networks:
+  gv-network:
+    driver: bridge
+
+services:
+  compra:
+    container_name: compra
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    networks:
+      - gv-network
+    restart: unless-stopped
+    depends_on:
+      - db
+    env_file: .env.prod
+
+  db:
+    container_name: db
+    image: mariadb:11.3
+    ports:
+      - "3307:3306" #esquerda porta do host, direita porta do container 
+    networks:
+      - gv-network
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+      MYSQL_ROOT_HOST: "%"
+    volumes:
+      - banco:/var/lib/mysql
+
+volumes:
+  banco:
