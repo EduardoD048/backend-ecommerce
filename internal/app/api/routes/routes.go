@@ -80,4 +80,19 @@ func SetupRoutes(app *fiber.App, dataBase *gorm.DB) {
 		// Return the found purchase with a 200 status code.
 		return c.JSON(purchase)
 	})
+
+	app.Delete("/purchase", func(c *fiber.Ctx) error {
+		// Attempt to delete all purchases from the database.
+		if err := dataBase.Exec("DELETE FROM purchases").Error; err != nil {
+			// Return a 500 error if there is an issue deleting the purchases.
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"message": "Error deleting purchases",
+			})
+		}
+	
+		// Return a success message with a 200 status code.
+		return c.JSON(fiber.Map{
+			"message": "All purchases have been successfully deleted",
+		})
+	})
 }
