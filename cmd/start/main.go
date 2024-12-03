@@ -14,31 +14,29 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 )
 
-// main is the entry point of the application. It initializes the database connection,
-// sets up the Fiber web server, configures the routes, and starts listening on port 3000.
-func main() {
-	app := fiber.New()
+// foi utilizado o fiber para criar a aplicação
 
-	app.Use(cors.New(cors.Config{
+func main() {  
+	app := fiber.New() // cria o servidor
+
+	app.Use(cors.New(cors.Config{ 
 		AllowOrigins: "*", // Front-end permitindo o acesso
 		AllowMethods: "GET,POST,PUT,DELETE,OPTIONS",
 		AllowHeaders: "Origin, Content-Type, Accept",
 	}))
 	err := godotenv.Load(".env")
 	if err != nil {
-		fmt.Println("Error em het .env")
+		fmt.Println("Error em het .env") // trata erro caso aconteça
 	}
 
 	initEnv := configEnv.NewConfig()
 
-	// Initialize the database connection.
+	// inicia a conexão com o banco de dados
 	dataBase := db.InitDB(initEnv)
 
-	// Create a new Fiber app instance.
-
-	// Set up the application routes.
+	// Configura as rotas da aplicação
 	routes.SetupRoutes(app, dataBase)
 
-	// Start the Fiber app and log any fatal errors.
+	// inicia o servidor fiber
 	log.Fatal(app.Listen(fmt.Sprintf("%s:%s", initEnv.Server.Ip, initEnv.Server.Port)))
 }

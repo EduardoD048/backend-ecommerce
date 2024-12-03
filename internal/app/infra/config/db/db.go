@@ -13,7 +13,7 @@ import (
 var db *gorm.DB
 var err error
 
-func InitDB(config *configEnv.Config) *gorm.DB {
+func InitDB(config *configEnv.Config) *gorm.DB { // cria ele e retorna a conexão com o banco de dados
 
 	dsn := fmt.Sprintf("%s?charset=utf8&parseTime=True&loc=Local", config.Mysql.Url)
 	db, err = gorm.Open("mysql", dsn)
@@ -22,23 +22,23 @@ func InitDB(config *configEnv.Config) *gorm.DB {
 	}
 	defer db.Close()
 
-	if err := checkAndCreateDatabase(config); err != nil {
+	if err := checkAndCreateDatabase(config); err != nil { // verifica se o banco de dados existe
 		log.Fatal(err)
 	}
 
-	dsn = fmt.Sprintf("%spurchases_db?charset=utf8&parseTime=True&loc=Local", config.Mysql.Url)
-	db, err = gorm.Open("mysql", dsn)
+	dsn = fmt.Sprintf("%spurchases_db?charset=utf8&parseTime=True&loc=Local", config.Mysql.Url) 
+	db, err = gorm.Open("mysql", dsn) // conecta com o banco de dados
 	if err != nil {
 		log.Fatal("Error connecting to database:", err)
 	}
 
-	db.AutoMigrate(&product_model.Product{}, &purchase_model.Purchase{})
+	db.AutoMigrate(&product_model.Product{}, &purchase_model.Purchase{}) // cria as tabelas no banco de dados
 	fmt.Println("Database and tables created successfully!")
 
 	return db
 }
 
-func checkAndCreateDatabase(config *configEnv.Config) error {
+func checkAndCreateDatabase(config *configEnv.Config) error { 
 	conn, err := sql.Open("mysql", config.Mysql.Url)
 	if err != nil {
 		return fmt.Errorf("Error connecting to MySQL server: %v", err)

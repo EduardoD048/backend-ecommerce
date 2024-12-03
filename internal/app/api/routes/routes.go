@@ -9,88 +9,73 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/cors"
 )
 
-// SetupRoutes configures the API routes for the application.
-//
-// It sets up two routes: one for creating a new purchase (POST /purchase) and
-// one for retrieving all purchases (GET /purchase).
 
 func SetupRoutes(app *fiber.App, dataBase *gorm.DB) {
 
 	app.Use(cors.New(cors.Config{
-		AllowOrigins: "http://localhost:3000", // Substitua pela URL do seu front-end
+		AllowOrigins: "http://localhost:3000", // permissão pro front pode receber requisições
 		AllowMethods: "GET,POST,PUT,DELETE,OPTIONS",
 		AllowHeaders: "Origin, Content-Type, Accept",
 	}))
 
-	// Define the route for creating a new purchase.
+	// definindo a rota para adicionar um produto 
 	app.Post("/purchase", func(c *fiber.Ctx) error {
-		// Define a slice to store the products in the request body.
 		var products []product_model.Product
 
-		// Parse the request body into the products slice.
+		// faz o parse do corpo da requisição para a variável products
 		if err := c.BodyParser(&products); err != nil {
-			// Return a 400 error if the request body is invalid.
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": "Error processing request"})
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": "Error processing request"}) // trata erro
 		}
 
-		// Create a new purchase with the products from the request body.
+		// cria uma nova compra 
 		purchase := purchase_model.Purchase{
 			Products: products,
 		}
 
-		// Save the purchase to the database.
+		// Salva no banco 
 		if err := dataBase.Create(&purchase).Error; err != nil {
-			// Return a 500 error if there is an issue saving the purchase.
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": "Error saving purchase"})
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": "Error saving purchase"}) // trata erro 
 		}
 
-		// Return the created purchase with a 201 status code.
+		// retorna 201
 		return c.Status(fiber.StatusCreated).JSON(purchase)
 	})
 
-	// Define the route for retrieving all purchases.
+	// rota para puxar todas as compras feitas 
 	app.Get("/purchase", func(c *fiber.Ctx) error {
-		// Define a slice to store the purchases from the database.
 		var purchases []purchase_model.Purchase
 
-		// Retrieve all purchases from the database, including their products.
+		// Retorna toda as compras feitas do banco
 		if err := dataBase.Preload("Products").Find(&purchases).Error; err != nil {
-			// Return a 500 error if there is an issue retrieving the purchases.
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": "Error retrieving purchases"})
 		}
 
-		// Return the purchases with a 200 status code.
+		// 201
 		return c.JSON(purchases)
 	})
 
-	// Define the route for retrieving a purchase by its ID.
 	app.Get("/purchase/:id", func(c *fiber.Ctx) error {
-		// Get the ID from the URL parameters
 		id := c.Params("id")
 
-		// Define a variable to store the purchase.
 		var purchase purchase_model.Purchase
 
-		// Retrieve the purchase by its ID, including its products.
+	     // retorna a compra feita com o id passado
 		if err := dataBase.Preload("Products").First(&purchase, id).Error; err != nil {
-			// Return a 404 error if the purchase is not found.
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"message": "Purchase not found"})
-		}
+		} 
 
-		// Return the found purchase with a 200 status code.
 		return c.JSON(purchase)
 	})
 
+    // rota delete
 	app.Delete("/purchase", func(c *fiber.Ctx) error {
-		// Attempt to delete all purchases from the database.
 		if err := dataBase.Exec("DELETE FROM purchases").Error; err != nil {
-			// Return a 500 error if there is an issue deleting the purchases.
+
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"message": "Error deleting purchases",
 			})
 		}
 	
-		// Return a success message with a 200 status code.
 		return c.JSON(fiber.Map{
 			"message": "All purchases have been successfully deleted",
 		})

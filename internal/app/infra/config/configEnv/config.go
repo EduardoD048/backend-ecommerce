@@ -2,7 +2,7 @@ package configEnv
 
 import "compra/pkg/env"
 
-type Config struct {
+type Config struct { // confuguração do ambiente 
 	Mysql struct {
 		Url string
 	}
